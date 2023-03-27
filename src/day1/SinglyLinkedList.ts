@@ -1,15 +1,21 @@
-export default class SinglyLinkedList<T> {
-    item: T | undefined;
-    length: number;
+class Node<T> {
+    item: T;
+    next?: Node<T>;
 
-    private next: SinglyLinkedList<T> | undefined;
-    private head: SinglyLinkedList<T> | undefined;
-    private tail: SinglyLinkedList<T> | undefined;
-
-    constructor(item?: T, next?: SinglyLinkedList<T> | undefined) {
-        this.length = 0;
+    constructor(item: T, next?: Node<T> | undefined) {
         this.item = item;
         this.next = next;
+    }
+}
+export default class SinglyLinkedList<T> {
+    length: number;
+
+    private head?: Node<T>;
+    private tail?: Node<T>;
+
+    constructor() {
+        this.head = this.tail = undefined;
+        this.length = 0;
     }
 
     get(idx: number): T | undefined {
@@ -31,21 +37,21 @@ export default class SinglyLinkedList<T> {
         this.length += 1;
 
         if (!this.head) {
-            this.head = this.tail = new SinglyLinkedList(item);
+            this.head = this.tail = new Node(item);
             return;
         }
-        let node: SinglyLinkedList<T> | undefined = this.head;
-        this.head = new SinglyLinkedList(item, node);
+        let nextNode: Node<T> = this.head;
+        this.head = new Node(item, nextNode);
     }
     append(item: T): void {
         this.length += 1;
 
         if (!this.tail || !this.head) {
-            this.head = this.tail = new SinglyLinkedList(item);
+            this.head = this.tail = new Node(item);
             return;
         }
 
-        this.tail.next = new SinglyLinkedList(item);
+        this.tail.next = new Node(item);
         this.tail = this.tail.next;
         return;
     }
@@ -65,7 +71,7 @@ export default class SinglyLinkedList<T> {
         }
 
         let nextNode = prevNode?.next;
-        prevNode.next = new SinglyLinkedList(item, nextNode);
+        prevNode.next = new Node(item, nextNode);
         this.length += 1;
         return;
     }
@@ -73,12 +79,13 @@ export default class SinglyLinkedList<T> {
         if (this.length === 0) {
             return undefined;
         } else if (this.length === 1 || this.head?.item == item) {
-            return this.pop_front(); //pop_front() should adjust head/tail
+            //pop_front() should adjust head/tail
+            return this.pop_front();
         }
 
-        let prevNode: SinglyLinkedList<T> | undefined = this.head;
-        let currNode: SinglyLinkedList<T> | undefined = prevNode?.next;
-        let nextNode: SinglyLinkedList<T> | undefined = currNode?.next;
+        let prevNode: Node<T> | undefined = this.head;
+        let currNode: Node<T> | undefined = prevNode?.next;
+        let nextNode: Node<T> | undefined = currNode?.next;
 
         while (currNode) {
             if (currNode.item === item) {
@@ -104,7 +111,7 @@ export default class SinglyLinkedList<T> {
         return undefined;
     }
     removeAt(idx: number): T | undefined {
-        if (idx < 0 || idx > this.length) {
+        if (idx < 0 || idx >= this.length) {
             return;
         }
         if (idx === 0) {
@@ -115,6 +122,7 @@ export default class SinglyLinkedList<T> {
         }
 
         let prevNode = this.traverseTo(idx - 1);
+        // assert prevNode exists
         let removed = prevNode?.next;
         if (prevNode) {
             prevNode.next = removed?.next;
@@ -129,7 +137,7 @@ export default class SinglyLinkedList<T> {
             return undefined;
         }
 
-        let popped: SinglyLinkedList<T> | undefined = this.head;
+        let popped: Node<T> | undefined = this.head;
         this.head = popped?.next;
         this.length -= 1;
         if (this.length === 0) {
@@ -157,15 +165,15 @@ export default class SinglyLinkedList<T> {
         }
 
         this.length -= 1;
-        let popped: SinglyLinkedList<T> | undefined = this.tail;
+        let popped: Node<T> | undefined = this.tail;
         return popped?.item;
     }
 
-    private traverseTo(idx: number): SinglyLinkedList<T> | undefined {
+    private traverseTo(idx: number): Node<T> | undefined {
         if (idx < 0 || idx >= this.length) {
             return; //invalid range  -  throw error??
         }
-        let node: SinglyLinkedList<T> | undefined = this.head;
+        let node: Node<T> | undefined = this.head;
         let i = 0;
         for (; i < idx && node?.next; ++i) {
             node = node?.next;
